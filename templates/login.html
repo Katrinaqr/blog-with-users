@@ -19,7 +19,7 @@
     </div>
   </header>
 
-  <div class="container">
+  <div class="container text-form">
     <div class="row">
 
       <div class="col-lg-8 col-md-10 mx-auto content">
@@ -30,7 +30,7 @@
         {% endfor %}
         {% endif %}
         {% endwith %}
-        <div class="text-form">{{ wtf.quick_form(form, novalidate=True, button_map={"submit": "primary"}) }}</div>
+        {{ wtf.quick_form(form, novalidate=True, button_map={"submit": "primary"}) }}
       </div>
     </div>
   </div>

@@ -1,14 +1,8 @@
-{% extends 'bootstrap/base.html' %}
 {% import "bootstrap/wtf.html" as wtf %}
 
-{% block title %}Author's Blog{% endblock %}
-{% block styles %}
-{{super()}}
-<link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='img/pen.ico') }}" />
-{% endblock %}
-
-{% block content %}
 {% include "header.html" %}
+
+{% include "navbar.html" %}
 
   <!-- Page Header -->
   <header class="masthead" style="background-image: url({{ url_for('static', filename='img/login-bg.jpg')}})">
@@ -36,12 +30,10 @@
         {% endfor %}
         {% endif %}
         {% endwith %}
-
-        {{ wtf.quick_form(form, novalidate=True, button_map={"submit": "primary"}) }}
+        <div class="text-form">{{ wtf.quick_form(form, novalidate=True, button_map={"submit": "primary"}) }}</div>
       </div>
     </div>
   </div>
 
 
 {% include "footer.html" %}
-{% endblock %}

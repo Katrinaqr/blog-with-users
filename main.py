@@ -10,7 +10,11 @@ from flask_login import UserMixin, login_user, LoginManager, login_required, cur
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from flask_gravatar import Gravatar
 from functools import wraps
+import datetime
 import os
+
+
+now = datetime.datetime.now().year
 
 app = Flask(__name__)
 # app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
@@ -86,7 +90,7 @@ db.create_all()
 def get_all_posts():
     posts = BlogPost.query.all()
     # current_user.is_authenticated return True or False
-    return render_template("index.html", all_posts=posts, current_user=current_user)
+    return render_template("index.html", all_posts=posts, current_user=current_user, now=now)
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -104,7 +108,7 @@ def register():
         db.session.commit()
         login_user(new_user)
         return redirect(url_for("get_all_posts"))
-    return render_template("register.html", form=form, current_user=current_user)
+    return render_template("register.html", form=form, current_user=current_user, now=now)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -124,7 +128,7 @@ def login():
                 flash("Password incorrect, please try again.")
         else:
             flash("That email does not exist, please try again.")
-    return render_template("login.html", form=form, current_user=current_user)
+    return render_template("login.html", form=form, current_user=current_user, now=now)
 
 
 @app.route('/logout')
@@ -146,17 +150,17 @@ def show_post(post_id):
         else:
             flash("You need to login or register to comment.")
             return redirect(url_for("login"))
-    return render_template("post.html", post=requested_post, current_user=current_user, form=form)
+    return render_template("post.html", post=requested_post, current_user=current_user, form=form, now=now)
 
 
 @app.route('/about')
 def about():
-    return render_template("about.html", current_user=current_user)
+    return render_template("about.html", current_user=current_user, now=now)
 
 
 @app.route('/contact')
 def contact():
-    return render_template("contact.html", current_user=current_user)
+    return render_template("contact.html", current_user=current_user, now=now)
 
 
 # Create admin-only decorator
@@ -187,7 +191,7 @@ def add_new_post():
         db.session.add(new_post)
         db.session.commit()
         return redirect(url_for("get_all_posts"))
-    return render_template("make-post.html", form=form, current_user=current_user)
+    return render_template("make-post.html", form=form, current_user=current_user, now=now)
 
 
 @app.route('/edit-post/<int:post_id>', methods=['GET', 'POST'])
@@ -210,7 +214,7 @@ def edit_post(post_id):
         db.session.commit()
         return redirect(url_for("show_post", post_id=post.id))
 
-    return render_template("make-post.html", form=edit_form, is_edit=True, current_user=current_user)
+    return render_template("make-post.html", form=edit_form, is_edit=True, current_user=current_user, now=now)
 
 
 @app.route('/delete/<int:post_id>')

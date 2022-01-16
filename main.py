@@ -4,7 +4,6 @@ from flask_ckeditor import CKEditor
 from datetime import date
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import ForeignKey
 from sqlalchemy.orm import relationship
 from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
@@ -13,8 +12,13 @@ from functools import wraps
 import datetime
 import os
 
-
+# Current year used in Footer
 now = datetime.datetime.now().year
+
+# Set Environment Variables
+my_email = os.environ.get("MY_EMAIL")
+password_email = os.environ.get("MY_PASSWORD")
+
 
 app = Flask(__name__)
 # app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
@@ -36,11 +40,6 @@ gravatar = Gravatar(app, size=100, rating='g', default='retro', force_default=Fa
 
 login_manager = LoginManager()
 login_manager.init_app(app)
-
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
 
 
 # CONFIGURE TABLES
@@ -84,6 +83,11 @@ class Comment(db.Model):
 
 
 db.create_all()
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
 @app.route('/')

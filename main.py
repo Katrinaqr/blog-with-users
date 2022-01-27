@@ -1,7 +1,7 @@
-from flask import Flask, render_template, redirect, url_for, flash, abort
+from flask import Flask, render_template, redirect, url_for, flash, abort, request
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
-from datetime import date
+from datetime import datetime, date
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import relationship
@@ -9,40 +9,44 @@ from flask_login import UserMixin, login_user, LoginManager, login_required, cur
 from forms import CreatePostForm, RegisterForm, LoginForm, CommentForm
 from flask_gravatar import Gravatar
 from functools import wraps
-import datetime
+import smtplib
 import os
 
+
+app = Flask(__name__)
+
+# SecretKey used for local DB
+# app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
+
+# SecretKey installed in environment Heroku / Vars config
+app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
+
+ckeditor = CKEditor(app)
+Bootstrap(app)
+
+# Connect to LOCAL DB
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
+
+# Connect to POSTGRES DB
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "sqlite:///blog.db")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+
 # Current year used in Footer
-now = datetime.datetime.now().year
+now = datetime.now().year
 
 # Set Environment Variables
 my_email = os.environ.get("MY_EMAIL")
 password_email = os.environ.get("MY_PASSWORD")
 
-
-app = Flask(__name__)
-# app.config['SECRET_KEY'] = '8BYkEfBA6O6donzWlSihBXox7C0sKR6b'
-app.config['SECRET_KEY'] = os.environ.get("SECRET_KEY")
-ckeditor = CKEditor(app)
-Bootstrap(app)
-
-
-# CONNECT TO LOCAL DB
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
-
-# CONNECT TO POSTGRES DATABASE
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL", "sqlite:///blog.db")
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
-
 # Gravatar images are used across the internet to provide an avatar image for blog comments.
-gravatar = Gravatar(app, size=100, rating='g', default='retro', force_default=False, force_lower=False, use_ssl=False, base_url=None)
-
-login_manager = LoginManager()
-login_manager.init_app(app)
+gravatar = Gravatar(app, size=100, rating='g', default='retro', force_default=False,
+                    force_lower=False, use_ssl=False, base_url=None)
 
 
-# CONFIGURE TABLES
 # Create the User Table
 class User(UserMixin, db.Model):
     __tablename__ = "users"
@@ -162,9 +166,22 @@ def about():
     return render_template("about.html", current_user=current_user, now=now)
 
 
-@app.route('/contact')
+@app.route('/contact', methods=['GET', 'POST'])
 def contact():
-    return render_template("contact.html", current_user=current_user, now=now)
+    message = False
+    if request.method == 'POST':
+        message = True
+        data = request.form
+        with smtplib.SMTP("smtp.gmail.com", port=587) as connection:
+            connection.starttls()
+            connection.login(user=my_email, password=password_email)
+            connection.sendmail(
+                from_addr=data['email'],
+                to_addrs=my_email,
+                msg=f"Subject:New message!\n\nName: {data['name']}\nEmail: {data['email']}\n"
+                    f"Phone: {data['phone']}\nMessage: {data['message']}"
+            )
+    return render_template("contact.html", current_user=current_user, message=message, now=now)
 
 
 # Create admin-only decorator

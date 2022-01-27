@@ -176,7 +176,7 @@ def contact():
             connection.starttls()
             connection.login(user=my_email, password=password_email)
             connection.sendmail(
-                from_addr=data['email'],
+                from_addr=my_email,
                 to_addrs=my_email,
                 msg=f"Subject:New message!\n\nName: {data['name']}\nEmail: {data['email']}\n"
                     f"Phone: {data['phone']}\nMessage: {data['message']}"

@@ -179,7 +179,7 @@ def contact():
                 from_addr=my_email,
                 to_addrs=my_email,
                 msg=f"Subject:New message!\n\nName: {data['name']}\nEmail: {data['email']}\n"
-                    f"Phone: {data['phone']}\nMessage: {data['message'].encode('utf-8')}"
+                    f"Phone: {data['phone']}\nMessage: {data['message']}"
             )
     return render_template("contact.html", current_user=current_user, message=message, now=now)
 
